@@ -2,21 +2,22 @@ import sqlite3
 
 connection = sqlite3.connect("test.db")
 
-print(connection.total_changes)
-
 cursor = connection.cursor()
 
-"""cursor.execute("CREATE TABLE IF NOT EXISTS Excitation_Files (id INTEGER, name TEXT)")
+cursor.execute("CREATE TABLE IF NOT EXISTS Impulse_Reponse (id INTEGER, file_name TEXT)")
 
-cursor.execute("INSERT INTO Excitation_Files VALUES (1, 'ssss')")"""
+import os
+
+# Specify the folder path
+folder_path = "Impulse_Reponse"
+
+# List all files in the folder
+files = os.listdir(folder_path)
+
+for file in files:
+
+    cursor.execute("INSERT OR IGNORE INTO Impulse_Reponse (file_name) VALUES (?)", (file,))
 
 
 connection.commit()
 
-cursor.execute("SELECT * FROM Excitation_Files")
-rows = cursor.fetchall()
-for row in rows:
-    print(row)
-
-a,b = rows[0]
-print(b)

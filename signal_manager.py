@@ -1,9 +1,9 @@
-import soundfile as sf
 import sounddevice as sd
 import numpy as np
 import matplotlib.pyplot as plt
 import sqlite3
 import librosa
+from scipy import signal
 
 connection = sqlite3.connect("test.db")
 
@@ -87,10 +87,23 @@ def reduce_signal_size(signal, Db_cap = 60):
 
     return signal[start:end]
 
+def orientation(signal):
+    if len(np.shape(signal)) == 2 and np.argmax(np.shape(signal)) == 1:
+        signal = signal.T
+
+    return signal
+
 def normalize_signal(signal):
     return signal*(0.99/np.amax(np.absolute(signal)))
 
 def convolv_signal(list_two_signals):
+
+    """plt.subplot(2,1,1)
+    plt.plot(list_two_signals[0])
+
+    plt.subplot(2,1,2)
+    plt.plot(list_two_signals[1])
+    plt.show()"""
 
     mono = True
 
@@ -104,7 +117,7 @@ def convolv_signal(list_two_signals):
     
     if mono:    
 
-        return np.convolve(list_two_signals[0], list_two_signals[1])
+        return signal.fftconvolve(list_two_signals[0], list_two_signals[1], mode = 'full')
 
     else:
         for i in range(len(list_two_signals)):
@@ -112,10 +125,17 @@ def convolv_signal(list_two_signals):
                 stereo_signal = list_two_signals[i]
                 mono_signal = list_two_signals[i-1]
 
-        right_signal = np.convolve(stereo_signal[:,0], mono_signal)
-        left_signal = np.convolve(stereo_signal[:,1], mono_signal)
+        right_signal = signal.fftconvolve(stereo_signal[:,0], mono_signal, mode = 'full')
+        left_signal = signal.fftconvolve(stereo_signal[:,1], mono_signal, mode = 'full')
 
-        return right_signal
+        stereo_list = resize_signal([right_signal,left_signal])
+
+        signal_final = np.zeros((len(stereo_list[0]),2))
+
+        signal_final[:,0] = stereo_list[0]
+        signal_final[:,1] = stereo_list[1]
+
+        return signal_final
 
 def convo(Iexi, Ihead, Iface, Iir, desired_sampling_rate = 48000):
    
@@ -127,41 +147,28 @@ def convo(Iexi, Ihead, Iface, Iir, desired_sampling_rate = 48000):
     y_rir_reduce = reduce_signal_size(y_rir)
     y_dir, y_refl, split_index = split_signal(y_rir_reduce)
 
-    y_obrir_1 = convolv_signal([y_dir,HRTF])
-    y_obrir_2 = convolv_signal([y_refl,OBTF])
+    y_obrir_1 = convolv_signal([y_dir,orientation(HRTF)])
+    y_obrir_2 = convolv_signal([y_refl,orientation(OBTF)])
 
-    y_obrir = np.append(y_obrir_1[:split_index],y_obrir_2)
+    y_obrir = np.append(y_obrir_1[:split_index],y_obrir_2, axis = 0)
 
     y_out = convolv_signal([y_exi,y_obrir])
 
     y_out_reduce = reduce_signal_size(y_out)
 
     y_out_final = normalize_signal(y_out_reduce)
+
+    if len(y_out_final) < 8000:
+        y_out_final = np.append(y_out_final,np.zeros((8000 - len(y_out_final),2)), axis = 0)
    
-    sd.play(y_out_final, samplerate=48000)
+    sd.play(y_out_final, samplerate = desired_sampling_rate)
     sd.wait()
 
     plt.plot(y_out_final)
     plt.show()
 
-
 convo(1,0,1,1)
 
-"""y_exi, sampling_rate = sf.read("Excitation_Files/click.wav")
-
-y_exi2, sampling_rate = sf.read("Impulse_Reponse/CircularWall_D150.wav")
-
-#y_exi = y_exi[:,0]
 
 
-
-new_y_exi_1 = reduce_signal_size(y_exi2)
-
-
-
-plt.subplot(2,1,1)
-plt.plot(y_exi2)
-
-plt.subplot(2,1,2)
-plt.plot(new_y_exi_1)
-plt.show()"""
+   
