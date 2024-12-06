@@ -1,9 +1,8 @@
-import sounddevice as sd
-import soundfile as sf
 import init_db as db
 import shutil
 import os
 import threading
+import IHM 
 
 dossier = "Signal_Response"
 
@@ -18,11 +17,21 @@ db._init_db()
 
 db.save_conbination()
 
-order = db.generate_test()
+def processe_one():  
 
-db.load_signal(order)
+    order = db.generate_test()
 
-"""s, sampling_rate = sf.read("Signal_Response/y_out_1.wav")
+    db.load_signal(order)
 
-sd.play(s,samplerate=sampling_rate)
-sd.wait()"""
+def process_two():
+
+    IHM.run()
+
+th1 = threading.Thread(target=processe_one)
+th2 = threading.Thread(target=process_two)
+
+th1.start()
+th2.start()
+
+th1.join()
+th2.join()

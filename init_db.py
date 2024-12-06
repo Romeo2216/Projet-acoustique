@@ -5,7 +5,7 @@ import numpy as np
 import signal_manager as sm
 
 
-connection = sqlite3.connect("signal.db")
+connection = sqlite3.connect("signal.db", check_same_thread=False)
 
 cursor = connection.cursor()
 
@@ -120,7 +120,7 @@ def generate_test():
 
     connection.commit()
 
-    return test_order
+    return first_part
 
 def load_signal(order):
 
@@ -149,11 +149,7 @@ def load_signal(order):
         cursor.execute("UPDATE Combination SET signal_file_name = ? WHERE id = ?", (signal_name, int(id),))
 
         connection.commit()
-
-
-
-        
-
+    
 
 def clear_db():
 
@@ -166,3 +162,5 @@ def clear_db():
 
     connection.commit()
     
+
+
