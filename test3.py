@@ -1,40 +1,28 @@
 import sqlite3
-import numpy as np
+import sounddevice as sd
+import soundfile as sf
 
 # Connexion à SQLite
-conn = sqlite3.connect("arrays.db")
-cursor = conn.cursor()
+connexion = sqlite3.connect("signal.db")
+cursor = connexion.cursor()
 
-# Création d'une table avec une colonne BLOB
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS Arrays (
-    id INTEGER PRIMARY KEY,
-    array BLOB
-)
-""")
+cursor.execute("SELECT * FROM Test_order WHERE rowid = ?",(1,))
+row = cursor.fetchone()
 
-# Exemple de tableau numpy 2D
-array_2d = np.random.rand(3, 3)
+A_index = row[1]
+B_index = row[2]
 
-# Conversion du tableau en binaire
-array_blob = array_2d.tobytes()
+cursor.execute("SELECT * FROM Combination WHERE rowid = ?",(A_index,))
+row = cursor.fetchone()
 
-# Insertion dans la base de données
-cursor.execute("INSERT INTO Arrays (array) VALUES (?)", (array_blob,))
-conn.commit()
+A_file_name = row[5]
 
-# Récupération du tableau
-cursor.execute("SELECT array FROM Arrays WHERE id = 1")
-retrieved_blob = cursor.fetchone()[0]
+cursor.execute("SELECT * FROM Combination WHERE rowid = ?",(B_index,))
+row = cursor.fetchone()
 
-# Reconstruction du tableau
-retrieved_array = np.frombuffer(retrieved_blob, dtype=array_2d.dtype).reshape(array_2d.shape)
+B_file_name = row[5]
 
-# Vérification
-print("Original Array:")
-print(array_2d)
-print("Retrieved Array:")
-print(retrieved_array)
-print(f"Are they equal? {np.array_equal(array_2d, retrieved_array)}")
+s, sampling_rate = sf.read("Signal_Response/" + str(A_file_name))
 
-conn.close()
+sd.play(s,samplerate=sampling_rate)
+sd.wait()
