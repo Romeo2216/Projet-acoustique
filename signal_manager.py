@@ -1,11 +1,11 @@
-import sounddevice as sd
 import numpy as np
-import matplotlib.pyplot as plt
 import sqlite3
 import librosa
 from scipy import signal
+import init_db as db
+from scipy.io.wavfile import write
 
-connection = sqlite3.connect("test.db")
+connection = sqlite3.connect("signal.db")
 
 cursor = connection.cursor()
 
@@ -50,14 +50,6 @@ def resize_signal(list_signals):
             list_signals[i] = np.append(list_signals[i],np.zeros(len_signal[longer_index] - len_signal[i]))
 
     return list_signals
-
-def get_file_name(i, folder):
-
-    cursor.execute("SELECT * FROM " + folder)
-    rows = cursor.fetchall()
-    file_name = rows[i]
-
-    return "".join(file_name)
 
 def reduce_signal_size(signal, Db_cap = 60):
 
@@ -137,12 +129,12 @@ def convolv_signal(list_two_signals):
 
         return signal_final
 
-def convo(Iexi, Ihead, Iface, Iir, desired_sampling_rate = 48000):
+def generate_signal(Iexi, Ihead, Iface, Iir, Combi_id, desired_sampling_rate = 48000):
    
-    HRTF, sampling_rate = librosa.load("TF_Head/" + get_file_name(Iface, "TF_Head"), sr=desired_sampling_rate, mono = False)
-    OBTF, sampling_rate = librosa.load("TF_Head/" + get_file_name(Ihead, "TF_Head"), sr=desired_sampling_rate, mono = False)
-    y_rir, sampling_rate = librosa.load("Impulse_Reponse/" + get_file_name(Iir, "Impulse_Reponse"), sr=desired_sampling_rate)
-    y_exi, sampling_rate = librosa.load("Excitation_Files/" + get_file_name(Iexi, "Excitation_Files"), sr=desired_sampling_rate)
+    HRTF, sampling_rate = librosa.load("HRTF/" + db.get_file_name(Iface, "HRTF"), sr=desired_sampling_rate, mono = False)
+    OBTF, sampling_rate = librosa.load("OBTF/" + db.get_file_name(Ihead, "OBTF"), sr=desired_sampling_rate, mono = False)
+    y_rir, sampling_rate = librosa.load("Impulse_Response/" + db.get_file_name(Iir, "Impulse_Response"), sr=desired_sampling_rate)
+    y_exi, sampling_rate = librosa.load("Excitation_Files/" + db.get_file_name(Iexi, "Excitation_Files"), sr=desired_sampling_rate)
     
     y_rir_reduce = reduce_signal_size(y_rir)
     y_dir, y_refl, split_index = split_signal(y_rir_reduce)
@@ -160,14 +152,16 @@ def convo(Iexi, Ihead, Iface, Iir, desired_sampling_rate = 48000):
 
     if len(y_out_final) < 8000:
         y_out_final = np.append(y_out_final,np.zeros((8000 - len(y_out_final),2)), axis = 0)
+
+    audio_data_int16 = (y_out_final * 32767).astype(np.int16)
+
+    file_name = "y_out_" + str(Combi_id) + ".wav"
+
+    write("Signal_Response/" + file_name, desired_sampling_rate, audio_data_int16)
    
-    sd.play(y_out_final, samplerate = desired_sampling_rate)
-    sd.wait()
+    return file_name
 
-    plt.plot(y_out_final)
-    plt.show()
 
-convo(1,0,1,1)
 
 
 
