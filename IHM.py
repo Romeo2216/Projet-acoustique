@@ -6,7 +6,7 @@ from tkinter import ttk
 
 listening_number = 1
 
-def run():
+def run(): 
     connexion = sqlite3.connect("signal.db")
     cursor = connexion.cursor()
 
@@ -71,7 +71,7 @@ def run():
     progress_label.pack(pady=10)
     progress_label.place(x=645, y=60)
 
-    # Cadre pour les boutons A, B, X
+    # Cadre pour les boutons A, B, X 
     button_frame = tk.Frame(root, bg="#008cb3")
     button_frame.pack(pady=20)
 
@@ -143,6 +143,7 @@ def run():
         width=15,
         command=lambda: on_answer("B"),
     )
+
     btn_answer_B.grid(row=0, column=1, padx=10)
 
     # Pied de page avec le logo ou information

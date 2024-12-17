@@ -16,7 +16,7 @@ def _init_db():
     cursor.execute("CREATE TABLE IF NOT EXISTS HRTF (`id` INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT, UNIQUE(file_name))")
     cursor.execute("CREATE TABLE IF NOT EXISTS OBTF (`id` INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT, UNIQUE(file_name))")
     cursor.execute("CREATE TABLE IF NOT EXISTS Combination (id INTEGER PRIMARY KEY  AUTOINCREMENT, `excitation_file` TEXT REFERENCES `Excitation_Files`(`file_name`), `hrtf` TEXT REFERENCES `HRTF`(`file_name`), `obtf` TEXT REFERENCES `OBTF`(`file_name`), `impulse_response` TEXT REFERENCES `Impulse_Response`(`file_name`),`signal_file_name` TEXT, UNIQUE(id))")
-    cursor.execute("CREATE TABLE IF NOT EXISTS Test_order (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `signal_A_id` INTEGER REFERENCES `Combination`(`id`), `signal_B_id` INTEGER REFERENCES `Combination`(`id`), `signal_X` INTEGER, UNIQUE(id))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Test_order (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `signal_1_id` INTEGER REFERENCES `Combination`(`id`), `signal_2_id` INTEGER REFERENCES `Combination`(`id`), `signal_X` INTEGER, `signal_A_B` INTEGER, UNIQUE(id))")
 
     folder_path = "Impulse_Response"
 
@@ -85,7 +85,7 @@ def save_conbination():
     range3 = range(0, nb_of_obtf)  
     range4 = range(0, nb_of_i_reponse)  
 
-    # Générer toutes les combinaisons
+    # Générer toutes les permutation
     combinaisons = list(product(range1, range2, range3, range4))
 
     # Afficher les résultats
@@ -150,7 +150,6 @@ def load_signal(order):
 
         connection.commit()
     
-
 def clear_db():
 
     cursor.execute("DROP TABLE `Combination`")
