@@ -25,7 +25,7 @@ def processe_one():
 
 def process_two():
 
-    IHM.run()
+    IHM.run_test()
 
 th1 = threading.Thread(target=processe_one)
 th2 = threading.Thread(target=process_two)

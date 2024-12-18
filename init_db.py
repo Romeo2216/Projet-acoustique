@@ -17,6 +17,7 @@ def _init_db():
     cursor.execute("CREATE TABLE IF NOT EXISTS OBTF (`id` INTEGER PRIMARY KEY AUTOINCREMENT, file_name TEXT, UNIQUE(file_name))")
     cursor.execute("CREATE TABLE IF NOT EXISTS Combination (id INTEGER PRIMARY KEY  AUTOINCREMENT, `excitation_file` TEXT REFERENCES `Excitation_Files`(`file_name`), `hrtf` TEXT REFERENCES `HRTF`(`file_name`), `obtf` TEXT REFERENCES `OBTF`(`file_name`), `impulse_response` TEXT REFERENCES `Impulse_Response`(`file_name`),`signal_file_name` TEXT, UNIQUE(id))")
     cursor.execute("CREATE TABLE IF NOT EXISTS Test_order (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `signal_1_id` INTEGER REFERENCES `Combination`(`id`), `signal_2_id` INTEGER REFERENCES `Combination`(`id`), `signal_X` INTEGER, `signal_A_B` INTEGER, UNIQUE(id))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS Sujet (`nom` TEXT, `prenom` TEXT, `date_de_naissance` TEXT, `sexe` TEXT, `probleme_d_audition` INTEGER)")
 
     folder_path = "Impulse_Response"
 
@@ -102,25 +103,23 @@ def generate_test():
 
     nb_of_combi = len(rows) + 1
 
-    first_part = np.arange(1,nb_of_combi)
-    second_part = np.arange(1,nb_of_combi)
-    third_part = np.arange(1,nb_of_combi)
+    combi = np.arange(1,nb_of_combi)
+    
+    combinaisons = [(a, b) for a, b in product(combi, combi) if a <= b and a != b]
 
-    np.random.shuffle(first_part)
-    np.random.shuffle(second_part)
-    np.random.shuffle(third_part)
+    np.random.shuffle(combinaisons)
 
-    test_order_temp = np.append(first_part, second_part)
-    test_order = np.append(test_order_temp, third_part)
+    generation_order = [element for tuple_ in combinaisons for element in tuple_]
 
-    X_boolean = np.random.choice(a=[0, 1], size=(len(test_order))) 
+    X_boolean = np.random.choice(a=[0, 1], size=(len(combinaisons))) 
+    A_B_boolean = np.random.choice(a=[0, 1], size=(len(combinaisons))) 
 
-    for i in range(0,len(test_order),2):
-        cursor.execute("INSERT OR IGNORE INTO Test_order (signal_A_id, signal_B_id, signal_X) VALUES (?,?,?)", (int(test_order[i]), int(test_order[i+1]), int(X_boolean[i])))
+    for i in range(0,len(combinaisons)):
+        cursor.execute("INSERT OR IGNORE INTO Test_order (signal_1_id, signal_2_id, signal_X, signal_A_B) VALUES (?,?,?,?)", (int(combinaisons[i][0]), int(combinaisons[i][1]), int(X_boolean[i]), int(A_B_boolean[i])))
 
     connection.commit()
 
-    return first_part
+    return generation_order
 
 def load_signal(order):
 
@@ -128,6 +127,9 @@ def load_signal(order):
     rows = cursor.fetchall()
 
     for id in order:
+
+        if os.path.exists("y_out_" + str(id)):
+            continue
         
         file_exi = rows[id - 1][1]
         cursor.execute("SELECT id FROM Excitation_Files WHERE file_name = ?",(file_exi,))
