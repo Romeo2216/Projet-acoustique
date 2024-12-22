@@ -1,9 +1,6 @@
-from itertools import product
+import sounddevice as sd
+import soundfile as sf
 
-range1 = range(0, 4)
-
-
-# Générer les combinaisons sans miroirs et sans les paires (a, a)
-combinaisons = [(a, b) for a, b in product(range1, range1) if a <= b and a != b]
-
-print(combinaisons)
+signal, sampling_rate = sf.read("Signal_Response\y_out_1.wav")
+sd.play(signal, samplerate=sampling_rate)
+sd.wait()

@@ -90,13 +90,6 @@ def normalize_signal(signal):
 
 def convolv_signal(list_two_signals):
 
-    """plt.subplot(2,1,1)
-    plt.plot(list_two_signals[0])
-
-    plt.subplot(2,1,2)
-    plt.plot(list_two_signals[1])
-    plt.show()"""
-
     mono = True
 
     for i in range(len(list_two_signals)):
@@ -150,8 +143,8 @@ def generate_signal(Iexi, Ihead, Iface, Iir, Combi_id, desired_sampling_rate = 4
 
     y_out_final = normalize_signal(y_out_reduce)
 
-    if len(y_out_final) < 8000:
-        y_out_final = np.append(y_out_final,np.zeros((8000 - len(y_out_final),2)), axis = 0)
+    if len(y_out_final) < 18000:
+        y_out_final = np.append(y_out_final,np.zeros((18000 - len(y_out_final),2)), axis = 0)
 
     audio_data_int16 = (y_out_final * 32767).astype(np.int16)
 

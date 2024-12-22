@@ -1,0 +1,13 @@
+You will hear 3 sounds (A, B and X).
+
+A and B are different but X can be either A or B.
+
+Your goal is to find whether X is A or B.
+
+If you are not sure of the right answer, press randomly one of the two answers.
+
+You can listen to those sounds as many times as you wish within 30 seconds.
+
+This test takes between 15 to 30 minutes to complete.
+
+When you are ready to begin, please click on the 'Ready' button.

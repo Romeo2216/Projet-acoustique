@@ -3,6 +3,8 @@ import shutil
 import os
 import threading
 import IHM 
+import IHM_sujet
+import IHM_instruction
 
 dossier = "Signal_Response"
 
@@ -25,7 +27,11 @@ def processe_one():
 
 def process_two():
 
-    IHM.run_test()
+    IHM_sujet.UserFormApp()
+
+    IHM_instruction.InstructionsApp()
+
+    IHM.ListeningTestApp()
 
 th1 = threading.Thread(target=processe_one)
 th2 = threading.Thread(target=process_two)
