@@ -4,8 +4,9 @@ from librosa import load
 from scipy import signal
 import init_db as db
 from scipy.io.wavfile import write
+import matplotlib.pyplot as plt
 
-connection = sqlite3.connect("signal.db")
+connection = sqlite3.connect("Db_Folder/signal.db")
 
 cursor = connection.cursor()
 
@@ -123,14 +124,18 @@ def convolv_signal(list_two_signals):
         return signal_final
 
 def generate_signal(Iexi, Ihead, Iface, Iir, Combi_id, desired_sampling_rate = 48000):
-   
-    HRTF, sampling_rate = load("HRTF/" + db.get_file_name(Iface, "HRTF"), sr=desired_sampling_rate, mono = False)
+    
+    y_exi, sampling_rate = load("Excitation_Files/" + db.get_file_name(Iexi, "Excitation_Files"), sr=desired_sampling_rate)
     OBTF, sampling_rate = load("OBTF/" + db.get_file_name(Ihead, "OBTF"), sr=desired_sampling_rate, mono = False)
     y_rir, sampling_rate = load("Impulse_Response/" + db.get_file_name(Iir, "Impulse_Response"), sr=desired_sampling_rate)
-    y_exi, sampling_rate = load("Excitation_Files/" + db.get_file_name(Iexi, "Excitation_Files"), sr=desired_sampling_rate)
+    HRTF, sampling_rate = load("HRTF/" + db.get_file_name(Iface, "HRTF"), sr=desired_sampling_rate, mono = False)
+
+
     
     y_rir_reduce = reduce_signal_size(y_rir)
     y_dir, y_refl, split_index = split_signal(y_rir_reduce)
+
+  
 
     y_obrir_1 = convolv_signal([y_dir,orientation(HRTF)])
     y_obrir_2 = convolv_signal([y_refl,orientation(OBTF)])

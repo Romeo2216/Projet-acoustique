@@ -2,9 +2,9 @@ import init_db as db
 import shutil
 import os
 import threading
-import IHM 
-import IHM_sujet
-import IHM_instruction
+import IHM_Folder.IHM as IHM
+import IHM_Folder.IHM_sujet as IHM_sujet
+import IHM_Folder.IHM_instruction as IHM_instruction
 
 dossier = "Signal_Response"
 
@@ -27,11 +27,12 @@ def processe_one():
 
 def process_two():
 
-    IHM_sujet.UserFormApp()
+    userform = IHM_sujet.UserFormApp()
+    print(userform.get_subject())
 
     IHM_instruction.InstructionsApp()
 
-    IHM.ListeningTestApp()
+    IHM.ListeningTestApp(subject_id=userform.get_subject())
 
 th1 = threading.Thread(target=processe_one)
 th2 = threading.Thread(target=process_two)
